@@ -67,7 +67,9 @@ public:
         float sopen, float sclose, float lensr, float focald, Film *film);
 protected:
     // ProjectiveCamera Protected Data
+    // 将相机投影到图像平面上后，该点就是Screen坐标系的原点
     Transform CameraToScreen, RasterToCamera;
+    // Raster坐标系的原点在图像左上角
     Transform ScreenToRaster, RasterToScreen;
     float lensRadius, focalDistance;
 };

@@ -157,10 +157,15 @@ public:
     BlockedArray(uint32_t nu, uint32_t nv, const T *d = NULL) {
         uRes = nu;
         vRes = nv;
+        // uBlocks等于水平方向上有多少block
         uBlocks = RoundUp(uRes) >> logBlockSize;
         uint32_t nAlloc = RoundUp(uRes) * RoundUp(vRes);
+        // 开辟一段内存对齐的内存空间
+        // n = sizeof(T)，data指针都是以n为间隔
         data = AllocAligned<T>(nAlloc);
         for (uint32_t i = 0; i < nAlloc; ++i)
+            // 执行类型T的初始化构造函数
+            // (new (&data[i])) T()
             new (&data[i]) T();
         if (d)
             for (uint32_t v = 0; v < vRes; ++v)
@@ -169,6 +174,8 @@ public:
     }
     uint32_t BlockSize() const { return 1 << logBlockSize; }
     uint32_t RoundUp(uint32_t x) const {
+        // 以BlockSize为间隔，向上取整
+        // 如当BlockSize为32时，40向上取整为64
         return (x + BlockSize() - 1) & ~(BlockSize() - 1);
     }
     uint32_t uSize() const { return uRes; }
@@ -178,7 +185,9 @@ public:
             data[i].~T();
         FreeAligned(data);
     }
+    // 得到a所在的块的编号
     uint32_t Block(uint32_t a) const { return a >> logBlockSize; }
+    // 得到a所在的块的内部偏移量
     uint32_t Offset(uint32_t a) const { return (a & (BlockSize() - 1)); }
     T &operator()(uint32_t u, uint32_t v) {
         uint32_t bu = Block(u), bv = Block(v);
@@ -187,6 +196,7 @@ public:
         offset += BlockSize() * ov + ou;
         return data[offset];
     }
+    // 将一个Block内的数据连续存储
     const T &operator()(uint32_t u, uint32_t v) const {
         uint32_t bu = Block(u), bv = Block(v);
         uint32_t ou = Offset(u), ov = Offset(v);

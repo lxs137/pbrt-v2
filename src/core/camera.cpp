@@ -92,8 +92,12 @@ ProjectiveCamera::ProjectiveCamera(const AnimatedTransform &cam2world,
     CameraToScreen = proj;
 
     // Compute projective camera screen transformations
+    // screenWindow表示水平与竖直方向的缩放比例，默认为正负1
+    // screenWindow[0] = x(负), screenWindow[1] = x(正)
+    // screenWindow[2] = y(负), screenWindow[3] = y(正)
     ScreenToRaster = Scale(float(film->xResolution),
                            float(film->yResolution), 1.f) *
+        // y轴要反转
         Scale(1.f / (screenWindow[1] - screenWindow[0]),
               1.f / (screenWindow[2] - screenWindow[3]), 1.f) *
         Translate(Vector(-screenWindow[0], -screenWindow[3], 0.f));

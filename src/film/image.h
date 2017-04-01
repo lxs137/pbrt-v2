@@ -62,7 +62,10 @@ public:
     void UpdateDisplay(int x0, int y0, int x1, int y1, float splatScale);
 private:
     // ImageFilm Private Data
+    // 每一个采样点会影响到周围若干点的像素值，影响的权重由filter决定
+    // filter包含均值滤波，高斯滤波等
     Filter *filter;
+    // [0, 1]，用于裁剪渲染窗口，以实现多设备同时渲染？
     float cropWindow[4];
     string filename;
     int xPixelStart, yPixelStart, xPixelCount, yPixelCount;
@@ -74,8 +77,12 @@ private:
         float Lxyz[3];
         float weightSum;
         float splatXYZ[3];
+        // 保证一个像素的数据正好占据一个cache，防止取像素值时导致多个cache Miss
+        // 一个cache占32B，加上pad正好一个Pixel对象占据一个cache
         float pad;
     };
+    // 像素采样时需要周围四个方向的像素值
+    // 以二维的块的结构存储Pixel，减少像素值采样时的Miss次数
     BlockedArray<Pixel> *pixels;
     float *filterTable;
 };

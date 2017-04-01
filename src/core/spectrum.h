@@ -300,6 +300,8 @@ public:
         }
 
         // Compute RGB to spectrum functions for _SampledSpectrum_
+        //根据在spectrum.cpp里事先提供的，采样数为32的转换曲线RGBRefl2*与
+        //RGBIllum2*数组，采样得到采样数为nSpectralSamples的转换曲线
         for (int i = 0; i < nSpectralSamples; ++i) {
             float wl0 = Lerp(float(i) / float(nSpectralSamples),
                              sampledLambdaStart, sampledLambdaEnd);
@@ -343,6 +345,8 @@ public:
             xyz[1] += Y.c[i] * c[i];
             xyz[2] += Z.c[i] * c[i];
         }
+        /*( (sampledLambdaEnd - sampledLambdaStart) / nSpectralSamples )
+        为在前面进行积分运算时单位矩形的宽度,CIE_Y_integral代表Y的积分*/
         float scale = float(sampledLambdaEnd - sampledLambdaStart) /
             float(CIE_Y_integral * nSpectralSamples);
         xyz[0] *= scale;
@@ -386,6 +390,7 @@ private:
 
 
 class RGBSpectrum : public CoefficientSpectrum<3> {
+    //RGBSpectrum 中的曲线(点)只含有三个值R，G，B
     using CoefficientSpectrum<3>::c;
 public:
     // RGBSpectrum Public Methods
@@ -398,6 +403,7 @@ public:
     static RGBSpectrum FromRGB(const float rgb[3],
             SpectrumType type = SPECTRUM_REFLECTANCE) {
         RGBSpectrum s;
+        //光谱曲线就是RGB的简单赋值，只有三个点
         s.c[0] = rgb[0];
         s.c[1] = rgb[1];
         s.c[2] = rgb[2];
@@ -436,6 +442,7 @@ public:
         }
         float xyz[3] = { 0, 0, 0 };
         float yint = 0.f;
+        //与之前ToXYZ函数计算xyz值类似，只不过采样数取默认的CIE采样数471
         for (int i = 0; i < nCIESamples; ++i) {
             yint += CIE_Y[i];
             float val = InterpolateSpectrumSamples(lambda, v, n,

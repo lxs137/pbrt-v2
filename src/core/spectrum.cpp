@@ -80,6 +80,7 @@ float AverageSpectrumSamples(const float *lambda, const float *vals,
         Lerp(((w) - lambda[i]) / (lambda[(i)+1] - lambda[i]), \
              vals[i], vals[(i)+1])
 #define SEG_AVG(wl0, wl1, i) (0.5f * (INTERP(wl0, i) + INTERP(wl1, i)))
+        //对segStart和segEnd时的c值，线性采样后，求平均值
     for (; i+1 < n && lambdaEnd >= lambda[i]; ++i) {
         float segStart = max(lambdaStart, lambda[i]);
         float segEnd =   min(lambdaEnd,   lambda[i+1]);
@@ -100,13 +101,18 @@ RGBSpectrum SampledSpectrum::ToRGBSpectrum() const {
 
 SampledSpectrum SampledSpectrum::FromRGB(const float rgb[3],
                                          SpectrumType type) {
+    //该函数可以从rgb一组颜色值重建光谱曲线(分为反射光谱曲线和物体自发光光谱曲线)
     SampledSpectrum r;
     if (type == SPECTRUM_REFLECTANCE) {
         // Convert reflectance spectrum to RGB
         if (rgb[0] <= rgb[1] && rgb[0] <= rgb[2]) {
             // Compute reflectance _SampledSpectrum_ with _rgb[0]_ as minimum
+
             r += rgb[0] * rgbRefl2SpectWhite;
             if (rgb[1] <= rgb[2]) {
+              //最后得到的光谱曲线为
+              //RED*rgbRefl2SpectWhite  + (GREEN-RED)*rgbRefl2SpectralCyan,
+              //+ (BLUE-GREEN)*rgbRefl2SpectBlue
                 r += (rgb[1] - rgb[0]) * rgbRefl2SpectCyan;
                 r += (rgb[2] - rgb[1]) * rgbRefl2SpectBlue;
             }
@@ -206,6 +212,7 @@ void Blackbody(const float *wl, int n, float temp, float *vals) {
 
 float InterpolateSpectrumSamples(const float *lambda, const float *vals,
                                  int n, float l) {
+    //根据任意的波长l，通过线性内插求出此时的光谱曲线值
     for (int i = 0; i < n-1; ++i) Assert(lambda[i+1] > lambda[i]);
     if (l <= lambda[0])   return vals[0];
     if (l >= lambda[n-1]) return vals[n-1];

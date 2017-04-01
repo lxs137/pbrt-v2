@@ -77,6 +77,7 @@ ImageFilm::ImageFilm(int xres, int yres, Filter *filt, const float crop[4],
 void ImageFilm::AddSample(const CameraSample &sample,
                           const Spectrum &L) {
     // Compute sample's raster extent
+    // 计算每个采样点的影响范围
     float dimageX = sample.imageX - 0.5f;
     float dimageY = sample.imageY - 0.5f;
     int x0 = Ceil2Int (dimageX - filter->xWidth);
@@ -110,10 +111,13 @@ void ImageFilm::AddSample(const CameraSample &sample,
                          filter->invYWidth * FILTER_TABLE_SIZE);
         ify[y-y0] = min(Floor2Int(fy), FILTER_TABLE_SIZE-1);
     }
+    // 确定是否一个采样点会影响到多余一个像素点
     bool syncNeeded = (filter->xWidth > 0.5f || filter->yWidth > 0.5f);
     for (int y = y0; y <= y1; ++y) {
         for (int x = x0; x <= x1; ++x) {
             // Evaluate filter value at $(x,y)$ pixel
+            // 计算filtertable的偏移量
+            // filtertable用一维数组来表示二维的滤波
             int offset = ify[y-y0]*FILTER_TABLE_SIZE + ifx[x-x0];
             float filterWt = filterTable[offset];
 
@@ -127,6 +131,7 @@ void ImageFilm::AddSample(const CameraSample &sample,
             }
             else {
                 // Safely update _Lxyz_ and _weightSum_ even with concurrency
+                // 若影响到多余一个像素点，当修改像素的XYZ时，要对赋值操作加多线程锁
                 AtomicAdd(&pixel.Lxyz[0], filterWt * xyz[0]);
                 AtomicAdd(&pixel.Lxyz[1], filterWt * xyz[1]);
                 AtomicAdd(&pixel.Lxyz[2], filterWt * xyz[2]);
@@ -136,7 +141,7 @@ void ImageFilm::AddSample(const CameraSample &sample,
     }
 }
 
-
+// 直接将采样点所对应的辐射度加到采样点所位于的像素点上
 void ImageFilm::Splat(const CameraSample &sample, const Spectrum &L) {
     if (L.HasNaNs()) {
         Warning("ImageFilm ignoring splatted spectrum with NaN values");

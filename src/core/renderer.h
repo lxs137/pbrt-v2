@@ -45,9 +45,12 @@ public:
     // Renderer Interface
     virtual ~Renderer();
     virtual void Render(const Scene *scene) = 0;
+    // 返回指定光线的入射辐射量
+    // rng：伪随机数生成器， arena:为计算时需要的零散小内存提供高效的分配方案
     virtual Spectrum Li(const Scene *scene, const RayDifferential &ray,
         const Sample *sample, RNG &rng, MemoryArena &arena,
         Intersection *isect = NULL, Spectrum *T = NULL) const = 0;
+    // 返回光线由于物体表面的散射而衰减之后的部分
     virtual Spectrum Transmittance(const Scene *scene,
         const RayDifferential &ray, const Sample *sample,
         RNG &rng, MemoryArena &arena) const = 0;

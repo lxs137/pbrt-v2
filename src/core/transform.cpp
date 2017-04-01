@@ -309,8 +309,15 @@ Transform Orthographic(float znear, float zfar) {
            Translate(Vector(0.f, 0.f, -znear));
 }
 
-
+// 将远平面和近平面之间的空间投影到视平面上
+// 由于之后的深度缓冲还需要用到z的数据，所以不能简单的将投影后的z值置为常数
+// 参考http://blog.csdn.net/popy007/article/details/1797121
+// M[2][2] = a, M[2][3] = b
+// g(z) = (a*z + b)/z, g(n) = 0, g(f) = 1;
+// a = f/(f-n), b = -f*n/(f-n)
 Transform Perspective(float fov, float n, float f) {
+    // n代表了相机原点与近平面的距离
+    // f代表了相机原点与远平面的距离，即最远可视的场景范围
     // Perform projective divide
     Matrix4x4 persp = Matrix4x4(1, 0,           0,              0,
                                 0, 1,           0,              0,

@@ -623,6 +623,7 @@ inline Point &BBox::operator[](int i) {
 
 inline Vector SphericalDirection(float sintheta,
                                  float costheta, float phi) {
+    //把θ和Φ转换为(x,y,z)的方向向量函数
     return Vector(sintheta * cosf(phi),
                   sintheta * sinf(phi),
                   costheta);
@@ -632,17 +633,20 @@ inline Vector SphericalDirection(float sintheta,
 inline Vector SphericalDirection(float sintheta, float costheta,
                                  float phi, const Vector &x,
                                  const Vector &y, const Vector &z) {
+    //给出坐标轴基底向量，把θ和Φ转换为(x,y,z)的方向向量函数
     return sintheta * cosf(phi) * x +
            sintheta * sinf(phi) * y + costheta * z;
 }
 
 
 inline float SphericalTheta(const Vector &v) {
+    //z=(x,y,z)，θ = arccos z
     return acosf(Clamp(v.z, -1.f, 1.f));
 }
 
 
 inline float SphericalPhi(const Vector &v) {
+    //z=(x,y,z),Φ = arctan ( y / x)
     float p = atan2f(v.y, v.x);
     return (p < 0.f) ? p + 2.f*M_PI : p;
 }

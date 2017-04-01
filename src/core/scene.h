@@ -62,8 +62,10 @@ public:
     const BBox &WorldBound() const;
 
     // Scene Public Data
+    // Primitive对象存储物体的几何结构信息和材质
     Primitive *aggregate;
     vector<Light *> lights;
+    // 定义了场景中的传播介质种类
     VolumeRegion *volumeRegion;
     BBox bound;
 };
